@@ -31,7 +31,7 @@ bindkey '^[[1;5C' forward-word                         # ctrl right
 bindkey '^H'      backward-kill-word                   # delete previous word with ctrl+backspace
 bindkey '^[[Z'    undo                                 # Shift+tab undo last action
 
-function Resume {
+function resume {
   fg
   zle push-input
   BUFFER=""
@@ -92,6 +92,7 @@ eval "$(zoxide init zsh)"
 eval "$(atuin init zsh)"
 eval "$(starship init zsh)"
 eval "$(fzf --zsh)"
+eval "$(zellij setup --generate-auto-start zsh)"
 
 # =====
 # Libraries
@@ -679,6 +680,3 @@ jupyter-kernel-rm() {
     print_success "Removed kernel: $name"
   done
 }
-
-# shell-tools
-source "/home/kxnr/src/shell-tools/zsh/init.zsh"

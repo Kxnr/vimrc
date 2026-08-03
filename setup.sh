@@ -108,10 +108,12 @@ install_rust() {
     fi
 
     info "Building helix (this may take a while)..."
+    cd "$HOME/src/helix/helix-term"
+    git checkout kxnr-patches
     cargo install \
        --profile opt \
        --config 'build.rustflags="-C target-cpu=native"' \
-       --path "$HOME/src/helix/helix-term" \
+       --path ./helix-term
        --locked
 
     mkdir -p "$HOME/.config/helix"
