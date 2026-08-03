@@ -83,6 +83,7 @@ Signed-By: /etc/apt/keyrings/docker.asc
 END
 
     sudo apt update
+    sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
     info "Docker installed!"
 }
 
@@ -257,22 +258,6 @@ install_formatters() {
     fi
 }
 
-install_marksman() {
-    if command_exists marksman; then
-        info "marksman already installed, skipping..."
-        return 0
-    fi
-
-    info "Installing marksman (markdown LSP)..."
-    local URL
-    URL=$(curl -s https://api.github.com/repos/artempyanykh/marksman/releases/latest \
-        | python3 -c "import sys,json; r=json.load(sys.stdin); print(next(a['browser_download_url'] for a in r['assets'] if a['name']=='marksman-linux-x64'))")
-    mkdir -p "$HOME/.local/bin"
-    curl -fsSL "$URL" -o "$HOME/.local/bin/marksman"
-    chmod +x "$HOME/.local/bin/marksman"
-    success "marksman installed"
-}
-
 install_node_tools() {
     if ! command_exists npm; then
         error "npm not found. Please install mise (with node) first."
@@ -339,21 +324,24 @@ install_nerd_font() {
     success "Nerd-fonts installed"
 }
 
+function install_docker() {
+
+}
+
 info "Starting setup..."
 
-install_nerd_font
 
-# install_build_essentials
-# install_docker
-# install_mise
-# install_rust
-# install_atuin
-# install_python_tools
-# setup_shell
-# install_shell_tools
-# install_formatters
-# install_marksman
-# install_node_tools
-# install_gitember
+install_build_essentials
+install_docker
+install_mise
+install_rust
+install_atuin
+install_python_tools
+setup_shell
+install_nerd_font
+install_shell_tools
+install_formatters
+install_node_tools
+install_gitember
 
 success "Setup complete!"
