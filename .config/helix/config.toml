@@ -11,7 +11,10 @@ cursorline = true
 text-width = 100
 idle-timeout = 50
 completion-timeout = 50
-
+trim-final-newlines = true
+trim-trailing-whitespace = true
+insert-final-newline = false
+shell = []
 
 [editor.inline-diagnostics]
 cursor-line = "hint"
@@ -59,169 +62,594 @@ mode.normal = "N"
 mode.insert = "I"
 mode.select = "S"
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Normal mode
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Modifier semantics:
+#   Alt   → destructive/yank variant (where default is noyank, or vice versa)
+#         → sub-word variant (smaller granularity than plain word)
+#   Shift → reverse direction or "bigger" variant (word→WORD)
+#   Ctrl  → cursor/view movement (vs text manipulation)
+#
+# , is the selection-manipulation minor mode
+# [ and ] minor modes extend the default bracket navigation cluster
+
+[keys.normal]
+# Basic movement
+h = "move_char_left"
+left = "move_char_left"
+j = "move_visual_line_down"
+down = "move_visual_line_down"
+k = "move_visual_line_up"
+up = "move_visual_line_up"
+l = "move_char_right"
+right = "move_char_right"
+
+# Character search
+t = "find_till_char"
+f = "find_next_char"
+T = "till_prev_char"
+F = "find_prev_char"
+
+# Replace — R displaced to A-r; A-. displaced to .
+r = "replace"
+R = "no_op"
+"A-r" = "replace_with_yanked"
+"." = "repeat_last_motion"
+"A-." = "no_op"
+
+# Case
+"~" = "switch_case"
+"`" = "switch_to_lowercase"
+"A-`" = "no_op"
+
+# Line start/end — disabled in favour of g-h/g-l
+home = "no_op"
+end = "no_op"
+
+# Word movement
+w = "move_next_word_start"
+b = "move_prev_word_start"
+e = "move_next_word_end"
+W = "move_next_long_word_start"
+B = "move_prev_long_word_start"
+E = "move_next_long_word_end"
+
+# Sub-word movement on Alt (displaces default parent-node movement)
+"A-w" = "move_next_sub_word_start"
+"A-b" = "move_prev_sub_word_start"
+"A-e" = "move_next_sub_word_end"
+
+# Mode switches
+v = "select_mode"
+G = "no_op"
+V = ["select_mode", "extend_to_line_end"]
+
+# Insert
+i = "insert_mode"
+I = "insert_at_line_start"
+a = "append_mode"
+A = "insert_at_line_end"
+o = "open_below"
+O = "open_above"
+
+# Delete/change — Alt keeps in register, plain discards
+d = "delete_selection_noyank"
+"A-d" = "delete_selection"
+c = "change_selection_noyank"
+"A-c" = "change_selection"
+
+# Multi-selection copy/split
+C = "copy_selection_on_next_line"
+"A-C" = "no_op"
+S = "no_op"
+s = "select_regex"
+"A-s" = "no_op"
+"A-minus" = "no_op"
+"A-_" = "no_op"
+
+# Collapse/flip — A-; disabled (moved to , minor mode)
+";" = ["keep_primary_selection", "collapse_selection"]
+"A-;" = "no_op"
+"A-:" = "no_op"
+
+# Tree-sitter selection — hjkl-style on Alt, displacing default A-o/i/p/n
+"A-k" = "expand_selection"
+"A-j" = "shrink_selection"
+"A-h" = "select_prev_sibling"
+"A-l" = "select_next_sibling"
+"A-a" = "select_all_siblings"
+"A-I" = "select_all_children"
+
+# Disable default tree-sitter keys (moved above)
+"A-o" = "no_op"
+"A-i" = "no_op"
+"A-p" = "no_op"
+"A-n" = "no_op"
+"A-up" = "no_op"
+"A-down" = "no_op"
+"A-left" = "no_op"
+"A-right" = "no_op"
+"A-S-down" = "no_op"
+
+# Line selection — x/X swapped vs upstream (x=bounds, X=extend)
+x = "extend_to_line_bounds"
+X = "extend_line"
+"A-x" = "shrink_to_line_bounds"
+
+# Select all
+"%" = "select_all"
+
+# Search
+"/" = "search"
+"?" = "rsearch"
+n = "search_next"
+N = "search_prev"
+"*" = "search_selection_detect_word_boundaries"
+"A-*" = "search_selection"
+
+# History — u/U are earlier/later (checkpoint-based); undo/redo not bound
+u = "earlier"
+U = "later"
+"A-u" = "no_op"
+"A-U" = "no_op"
+
+# Yank/paste
+y = "yank"
+Y = "yank_joined"
+p = "paste_after"
+P = "paste_before"
+"\"" = "no_op"
+"'" = "select_register"
+
+# Macro — q=replay, A-q=record (Q disabled)
+q = "replay_macro"
+"A-q" = "record_macro"
+Q = "no_op"
+
+# Indent/format
+">" = "indent"
+"<" = "unindent"
+"=" = "format_selections"
+
+# Join — J=join_space (common case), A-J disabled
+J = "join_selections_space"
+"A-J" = "no_op"
+
+# Selection management — moved to , minor mode; & disabled
+K = "no_op"
+"A-K" = "no_op"
+"&" = "no_op"
+"_" = "trim_selections"
+"A-," = "no_op"
+"(" = "no_op"
+")" = "no_op"
+"A-(" = "no_op"
+"A-)" = "no_op"
+
+# Shell — | and A-| swapped vs upstream (| pipes to, A-| pipes through)
+"|" = "shell_pipe_to"
+"A-|" = "shell_pipe"
+"!" = "no_op"
+"A-!" = "no_op"
+"$" = "shell_keep_pipe"
+
+# Increment/decrement — moved from C-a/C-x to +/-
+"+" = "increment"
+minus = "decrement"
+"C-a" = "no_op"
+"C-x" = "no_op"
+
+# Page movement — C-j/C-k (half page), C-b/C-f (full page)
+"C-j" = "page_cursor_half_down"
+"C-k" = "page_cursor_half_up"
+"C-u" = "no_op"
+"C-d" = "no_op"
+"C-b" = "page_up"
+pageup = "page_up"
+"C-f" = "page_down"
+pagedown = "page_down"
+
+# Jumplist
+# TODO: add more jumplist functionality, make more operations add to jumplist
+"C-i" = "jump_forward"
+"C-o" = "jump_backward"
+"C-s" = "no_op"
+
+# Comments
+"C-c" = "no_op"
+
+# Misc
+esc = "normal_mode"
+"C-z" = "suspend"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Normal: Goto minor mode (g)
+# ─────────────────────────────────────────────────────────────────────────────
+
+[keys.normal.g]
+g = "goto_file_start"
+"|" = "goto_column"
+e = "goto_last_line"
+f = "goto_file"
+h = "goto_line_start"
+l = "goto_line_end"
+s = "goto_first_nonwhitespace"
+d = "goto_definition"
+D = "goto_declaration"
+y = "goto_type_definition"
+r = "goto_reference"
+i = "goto_implementation"
+t = "goto_window_top"
+c = "goto_window_center"
+b = "goto_window_bottom"
+a = "goto_last_accessed_file"
+m = "goto_last_modified_file"
+n = "goto_next_buffer"
+p = "goto_previous_buffer"
+k = "move_line_up"
+j = "move_line_down"
+"." = "goto_last_modification"
+w = "goto_word"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Normal: Match minor mode (m)
+# ─────────────────────────────────────────────────────────────────────────────
+
+[keys.normal.m]
+m = "match_brackets"
+s = "surround_add"
+r = "surround_replace"
+d = "surround_delete"
+a = "select_textobject_around"
+i = "select_textobject_inner"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Normal: Left bracket navigation ([)
+# ─────────────────────────────────────────────────────────────────────────────
+
+[keys.normal."["]
+"[" = "move_parent_node_start"
+d = "goto_prev_diag"
+D = "goto_first_diag"
+g = "goto_prev_change"
+G = "goto_first_change"
+f = "goto_prev_function"
+t = "goto_prev_class"
+a = "goto_prev_parameter"
+c = "goto_prev_comment"
+e = "goto_prev_entry"
+T = "goto_prev_test"
+p = "goto_prev_paragraph"
+x = "goto_prev_xml_element"
+space = "add_newline_above"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Normal: Right bracket navigation (])
+# ─────────────────────────────────────────────────────────────────────────────
+
+[keys.normal."]"]
+"]" = "move_parent_node_end"
+d = "goto_next_diag"
+D = "goto_last_diag"
+g = "goto_next_change"
+G = "goto_last_change"
+f = "goto_next_function"
+t = "goto_next_class"
+a = "goto_next_parameter"
+c = "goto_next_comment"
+e = "goto_next_entry"
+T = "goto_next_test"
+p = "goto_next_paragraph"
+x = "goto_next_xml_element"
+space = "add_newline_below"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Normal: View minor mode (z / Z sticky)
+# ─────────────────────────────────────────────────────────────────────────────
+
+[keys.normal.z]
+z = "align_view_center"
+c = "align_view_center"
+t = "align_view_top"
+b = "align_view_bottom"
+m = "align_view_middle"
+k = "scroll_up"
+up = "scroll_up"
+j = "scroll_down"
+down = "scroll_down"
+"C-b" = "page_up"
+pageup = "page_up"
+"C-f" = "page_down"
+pagedown = "page_down"
+"C-u" = "page_cursor_half_up"
+backspace = "page_cursor_half_up"
+"C-d" = "page_cursor_half_down"
+space = "page_cursor_half_down"
+"/" = "search"
+"?" = "rsearch"
+n = "search_next"
+N = "search_prev"
+
+[keys.normal.Z]
+z = "align_view_center"
+c = "align_view_center"
+t = "align_view_top"
+b = "align_view_bottom"
+m = "align_view_middle"
+k = "scroll_up"
+up = "scroll_up"
+j = "scroll_down"
+down = "scroll_down"
+"C-b" = "page_up"
+pageup = "page_up"
+"C-f" = "page_down"
+pagedown = "page_down"
+"C-u" = "page_cursor_half_up"
+backspace = "page_cursor_half_up"
+"C-d" = "page_cursor_half_down"
+space = "page_cursor_half_down"
+"/" = "search"
+"?" = "rsearch"
+n = "search_next"
+N = "search_prev"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Normal: Window minor mode (C-w / space.w)
+# ─────────────────────────────────────────────────────────────────────────────
+
+[keys.normal."C-w"]
+"C-w" = "rotate_view"
+w = "rotate_view"
+"C-s" = "hsplit"
+s = "hsplit"
+"C-v" = "vsplit"
+v = "vsplit"
+"C-t" = "transpose_view"
+t = "transpose_view"
+f = "goto_file_hsplit"
+F = "goto_file_vsplit"
+"C-q" = "wclose"
+q = "wclose"
+"C-o" = "wonly"
+o = "wonly"
+"C-h" = "jump_view_left"
+h = "jump_view_left"
+left = "jump_view_left"
+"C-j" = "jump_view_down"
+j = "jump_view_down"
+down = "jump_view_down"
+"C-k" = "jump_view_up"
+k = "jump_view_up"
+up = "jump_view_up"
+"C-l" = "jump_view_right"
+l = "jump_view_right"
+right = "jump_view_right"
+H = "swap_view_left"
+J = "swap_view_down"
+K = "swap_view_up"
+L = "swap_view_right"
+
+[keys.normal."C-w".n]
+"C-s" = "hsplit_new"
+s = "hsplit_new"
+"C-v" = "vsplit_new"
+v = "vsplit_new"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Normal: Space minor mode
+# ─────────────────────────────────────────────────────────────────────────────
+
 [keys.normal.space]
-"space" = "goto_word"
+space = "goto_word"
+f = "file_picker"
+F = "file_picker_in_current_directory"
+e = "file_explorer"
+"." = "file_explorer_in_current_buffer_directory"
+b = "buffer_picker"
+j = "jumplist_picker"
+s = "lsp_or_syntax_symbol_picker"
+S = "lsp_or_syntax_workspace_symbol_picker"
+d = "diagnostics_picker"
+D = "workspace_diagnostics_picker"
+g = "changed_file_picker"
+a = "code_action"
+"'" = "last_picker"
+y = "yank_to_clipboard"
+Y = "yank_main_selection_to_clipboard"
+p = "paste_clipboard_after"
+P = "paste_clipboard_before"
+R = "replace_selections_with_clipboard"
+"/" = "global_search"
+k = "hover"
+r = "rename_symbol"
+h = "select_references_to_symbol_under_cursor"
+c = "toggle_comments"
+C = "toggle_block_comments"
+"A-c" = "toggle_line_comments"
+"?" = "command_palette"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Normal: Space → diagnostics toggle (space.i)
+# ─────────────────────────────────────────────────────────────────────────────
 
 [keys.normal.space.i]
 c = ":toggle inline-diagnostics.cursor-line hint disable"
 e = ":toggle end-of-line-diagnostics warning disable"
 o = ":toggle inline-diagnostics.other-lines error disable"
 
-# modifiers meaning:
-# TODO: moving towards a different concept of modifiers. Establish a primary purpose for a key, then
-# TODO: define alternate and control behaviors. This keeps similar meanings for modifiers, but avoids
-# TODO: sticking keys on modifiers without a parent behavior
-# Alt -> destructive modifier. Where there's a command than can optionally make changes or change 
-#        register contents, alt enables the modification behavior
-#           -> is this a smaller example of a broader pattern of alternative behavior?
-#     -> shrink modifier. The same but smaller, opposite of Shift
-# Shift -> reverse modifier. lowercase forwards, uppercase backwards
-#       -> the same but bigger. ie word to WORD
-# Ctrl -> movement modifier. Default interaction is with text (ie next match), ctrl makes these in terms
-#           of cursor or picker movement
-# TODO: comma is underused
+# ─────────────────────────────────────────────────────────────────────────────
+# Normal: Space → debug (space.G)
+# ─────────────────────────────────────────────────────────────────────────────
 
-[keys.normal]
-# TODO: open commits from blame, use xargs with -L /regex/ to get blame for selection
-C-g = [
-    ":write-all", 
-    ":new", 
-    ":insert-output lazygit", 
-    ":buffer-close!", 
-    ":redraw", 
-    ":reload-all"
-]
-A-w = "move_next_sub_word_start"
-A-b = "move_prev_sub_word_start"
-A-e = "move_next_sub_word_end"
-A-d = "delete_selection"
-d = "delete_selection_noyank"
-A-c = "change_selection"
-c = "change_selection_noyank"
-x = "extend_to_line_bounds"
-X = "extend_line"
-J = "join_selections_space"
-"A-x" = "shrink_to_line_bounds"
-V = ["select_mode", "extend_to_line_end"]
-"." = "repeat_last_motion"
-# there's no repeat_last_insert command, this is accomplished through a code change
-# "A-." = "repeat_last_insert"
-"A-r" = "replace_with_yanked"
-# TODO: copy to view and select modes
-"C-j" = "page_cursor_half_down"
-"C-k" = "page_cursor_half_up"
-# TODO: jumplist movements seem random, but are muscle-memoried pretty well
-# TODO: fast save history, save jump
-"U" = "later"
-"u" = "earlier"
-"+" = "increment"
-"minus" = "decrement"
-"|" = "shell_pipe_to"
-"A-|" = "shell_pipe"
-"A-q" = "record_macro"
-"q" = "replay_macro"
-"'" = "select_register"
-";" = ["keep_primary_selection", "collapse_selection"]
-"_" = "trim_selections"
-"A-l" = "select_next_sibling"
-"A-h" = "select_prev_sibling"
-"A-j" = "shrink_selection"
-"A-k" = "expand_selection"
-# TODO: yank join
-# TODO: $ keep where exit is 0
+[keys.normal.space.G]
+l = "dap_launch"
+r = "dap_restart"
+b = "dap_toggle_breakpoint"
+c = "dap_continue"
+h = "dap_pause"
+i = "dap_step_in"
+o = "dap_step_out"
+n = "dap_next"
+v = "dap_variables"
+t = "dap_terminate"
+"C-c" = "dap_edit_condition"
+"C-l" = "dap_edit_log"
+e = "dap_enable_exceptions"
+E = "dap_disable_exceptions"
 
-# remove redundant keys/keys that use modifiers differently/unused keys as a simplification. This 
-# breaks compatibility with docs, but trying to standardize and keep compatibility can't both work
-"A-." = "no_op"
-"C-u" = "no_op"
-"C-d" = "no_op"
-"C-s" = "no_op"
-"home" = "no_op"
-"end" = "no_op"
-"C-a" = "no_op"
-"C-x" = "no_op"
-"G" = "no_op"
-"A-`" = "no_op"
+[keys.normal.space.G.s]
+t = "dap_switch_thread"
+f = "dap_switch_stack_frame"
 
-# I don't use ! and it doesn't quite fit with the Alt/Shift roles I've described. If
-# I need these, then I'll revisit this change, likely by making | a minor mode
-# This is pipe + prepend or append
-"!" = "no_op"
-"A-!" = "no_op"
-"Q" = "no_op"
-"S" = "no_op"
-"A-s" = "no_op"
-"A-minus" = "no_op"
-"A-_" = "no_op"
-"&" = "no_op" # pipe as filter
-"A-;" = "no_op" # selection manipulation
-"A-:" = "no_op"
-"A-," = "no_op"
-"A-C" = "no_op"
-"(" = "no_op"
-")" = "no_op"
-"A-(" = "no_op"
-"A-)" = "no_op"
-"K" = "no_op"
-"A-K" = "no_op"
-"C-c" = "no_op"
-"A-J" = "no_op"
-"R" = "no_op"
+# ─────────────────────────────────────────────────────────────────────────────
+# Normal: Space → window (space.w) — mirrors C-w
+# ─────────────────────────────────────────────────────────────────────────────
+
+[keys.normal.space.w]
+"C-w" = "rotate_view"
+w = "rotate_view"
+"C-s" = "hsplit"
+s = "hsplit"
+"C-v" = "vsplit"
+v = "vsplit"
+"C-t" = "transpose_view"
+t = "transpose_view"
+f = "goto_file_hsplit"
+F = "goto_file_vsplit"
+"C-q" = "wclose"
+q = "wclose"
+"C-o" = "wonly"
+o = "wonly"
+"C-h" = "jump_view_left"
+h = "jump_view_left"
+left = "jump_view_left"
+"C-j" = "jump_view_down"
+j = "jump_view_down"
+down = "jump_view_down"
+"C-k" = "jump_view_up"
+k = "jump_view_up"
+up = "jump_view_up"
+"C-l" = "jump_view_right"
+l = "jump_view_right"
+right = "jump_view_right"
+H = "swap_view_left"
+J = "swap_view_down"
+K = "swap_view_up"
+L = "swap_view_right"
+
+[keys.normal.space.w.n]
+"C-s" = "hsplit_new"
+s = "hsplit_new"
+"C-v" = "vsplit_new"
+v = "vsplit_new"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Normal: Selection manipulation minor mode (,)
+#   ,, = ensure cursor at start of selection (ensure-forward then flip)
+# ─────────────────────────────────────────────────────────────────────────────
+
+[keys.normal.","]
+"," = "ensure_selections_forward"
+space = "keep_selections"
+k = "keep_primary_selection"
+K = "remove_primary_selection"
+d = "remove_selections"
+n = "rotate_selections_forward"
+N = "rotate_selections_backward"
+s = "split_selection"
+S = "split_selection_on_newline"
+r = "select_regex"
+"=" = "align_selections"
+j = "save_selection"
+";" = "collapse_selection"
+"~" = "flip_selections"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Select mode
+#
+# Inherits all normal mode binds; entries here override or add to them.
+# ─────────────────────────────────────────────────────────────────────────────
 
 [keys.select]
-# movement commands within selections at "top level"
+h = "extend_char_left"
+left = "extend_char_left"
+j = "extend_visual_line_down"
+down = "extend_visual_line_down"
+k = "extend_visual_line_up"
+up = "extend_visual_line_up"
+l = "extend_char_right"
+right = "extend_char_right"
+
+w = "extend_next_word_start"
+b = "extend_prev_word_start"
+e = "extend_next_word_end"
+W = "extend_next_long_word_start"
+B = "extend_prev_long_word_start"
+E = "extend_next_long_word_end"
+
+# Sub-word extend on Alt
 "A-w" = "extend_next_sub_word_start"
 "A-b" = "extend_prev_sub_word_start"
 "A-e" = "extend_next_sub_word_end"
-"c" = "copy_selection_on_next_line"
-"n" = "rotate_selections_forward"
-"N" = "rotate_selections_backward"
-"C" = "copy_selection_on_prev_line"
+
+# Parent-node extend (select mode uses extend_ variants)
+"A-k" = "expand_selection"
+"A-j" = "shrink_selection"
+# Sibling extend in select mode
+"A-l" = "extend_next_sibling"
+"A-h" = "extend_prev_sibling"
+
+n = "extend_search_next"
+N = "extend_search_prev"
+
+t = "extend_till_char"
+f = "extend_next_char"
+T = "extend_till_prev_char"
+F = "extend_prev_char"
+
+home = "extend_to_line_start"
+end = "extend_to_line_end"
+
+esc = "exit_select_mode"
+v = "normal_mode"
+
+# Selection manipulation
+c = "copy_selection_on_next_line"
+C = "copy_selection_on_prev_line"
 x = "extend_to_line_bounds"
 X = "extend_line"
 ";" = "collapse_selection"
-# TODO: make flip selections available in normal mode
 "~" = "flip_selections"
 "=" = "align_selections"
-# TODO: let these expand selection across siblings
-"A-l" = "select_next_sibling"
-"A-h" = "select_prev_sibling"
-"A-j" = "shrink_selection"
-"A-k" = "expand_selection"
 
-[keys.select.space]
-# TODO: ensure selections forward
-"n" = "rotate_selections_forward"
-"N" = "rotate_selections_backward"
-"c" = "copy_selection_on_next_line"
-"C" = "copy_selection_on_prev_line"
-"k" = "keep_selections"
-"K" = "keep_primary_selection"
-"s" = "select_regex"
-"S" = "split_selection"
-"d" = "remove_selections"
-"D" = "remove_primary_selection"
-"j" = "save_selection"
+[keys.select.g]
+g = "extend_to_file_start"
+"|" = "extend_to_column"
+e = "extend_to_last_line"
+k = "extend_line_up"
+j = "extend_line_down"
+w = "extend_to_word"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Select: Selection manipulation minor mode (,)
+# Note: select mode does not inherit user-defined normal mode changes,
+# so this must be defined explicitly even though it mirrors normal mode.
+# ─────────────────────────────────────────────────────────────────────────────
+
+[keys.select.","]
+"," = "ensure_selections_forward"
+space = "keep_selections"
+k = "keep_primary_selection"
+K = "remove_primary_selection"
+d = "remove_selections"
+n = "rotate_selections_forward"
+N = "rotate_selections_backward"
+s = "split_selection"
+S = "split_selection_on_newline"
+r = "select_regex"
+"=" = "align_selections"
+j = "save_selection"
 ";" = "collapse_selection"
 "~" = "flip_selections"
-"=" = "align_selections"
-" " = "split_selection_on_newline"
-"f" = "no_op"
-"F" = "no_op"
-"b" = "no_op"
-"e" = "no_op"
-"E" = "no_op"
-"g" = "no_op"
-"a" = "no_op"
-"'" = "no_op"
-"p" = "no_op"
-"P" = "no_op"
-"/" = "no_op"
-"r" = "no_op"
-"?" = "no_op"
-
-[keys.normal."["]
-"[" = "move_parent_node_start"
-
-[keys.normal."]"]
-"]" = "move_parent_node_end"

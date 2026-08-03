@@ -32,6 +32,8 @@
   side-by-side = true
   line-numbers = true
 
+
+
 [diff]
   tool = difft
   algorithm = histogram
@@ -62,6 +64,7 @@
 [alias]
   lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<<%an>>%Creset' --abbrev-commit --date=relative
   cm = commit -m
+  ac = commit --amend
   au = add -u
   undo = reset HEAD~1 --mixed
   tree = log --pretty=better-oneline --all --graph --date=short
@@ -69,11 +72,15 @@
   gob = checkout -b
   aliases = "git config --get-regexp ^alias\\. | sed -e s/^alias\\.// -e s/\\ /\\ =\\ /"
   get-all = "!f() { for b in `git branch -r | grep -v -- '->'`; do git branch --track ${b##origin/} $b; done; }; f"
+  update = "!f() { git fetch origin main; git merge origin/main; }; f"
 
 [merge "mergiraf"]
   name = mergiraf
   conflictStyle = "diff3"
   driver = mergiraf merge --git %O %A %B -s %S -x %X -y %Y -p %P -l %L
+
+[merge]
+  conflictStyle = zdiff3
 
 [difftool]
   prompt = false

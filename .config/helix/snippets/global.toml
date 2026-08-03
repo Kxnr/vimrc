@@ -1,0 +1,17 @@
+[[snippets]]
+prefix = "cbar"
+description = "comment bar with label (hash)"
+scope = "default"
+body = "# ───────────────────────────────────────────────────────────────────────────────\n# ${1:Section}\n# ───────────────────────────────────────────────────────────────────────────────\n$0"
+
+[[snippets]]
+prefix = "cbar2"
+description = "comment bar with label (double slash)"
+scope = "default"
+body = "// ─────────────────────────────────────────────────────────────────────────────\n// ${1:Section}\n// ─────────────────────────────────────────────────────────────────────────────\n$0"
+
+[[snippets]]
+prefix = "cbar--"
+description = "comment separator line (hash)"
+scope = "default"
+body = "# ───────────────────────────────────────────────────────────────────────────────\n$0"

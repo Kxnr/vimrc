@@ -1,3 +1,9 @@
 .mise.toml
 .pdbrc
 # .env*
+
+**/.claude/settings.local.json
+ty.toml
+pyrefly.toml
+helix.toml
+.helix.toml
