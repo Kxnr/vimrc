@@ -156,5 +156,6 @@ format = '[[ $indicator ](fg:color_fg0 bg:color_green)]($style)'
 
 [custom.workable]
 command = "work"
+disabled = false
 when = true
 ignore_timeout = true
