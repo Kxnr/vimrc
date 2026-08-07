@@ -10,6 +10,17 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
+sync_dotfile_submodules() {
+    if ! command_exists yadm; then
+        error "yadm not found; install it and clone your dotfiles before running this script"
+        return 1
+    fi
+
+    info "Syncing yadm submodules (scripts, zsh plugins, helix, zide)..."
+    yadm submodule update --init --recursive
+    success "Submodules synced"
+}
+
 install_build_essentials() {
     info "Installing build essentials..."
 
@@ -97,20 +108,17 @@ install_rust() {
     cargo install ast-grep --locked
     cargo install watchexec --locked
     cargo install taplo-cli --locked
+    cargo install broot --locked
 
     success "Cargo tools installed"
 
-    if [ -d "$HOME/src/helix" ]; then
-        info "Helix already cloned, skipping..."
-    else
-        info "Cloning and building helix..."
-        mkdir -p "$HOME/src"
-        git clone git@github.com:kxnr/helix "$HOME/src/helix"
+    if [ ! -d "$HOME/src/helix" ]; then
+        error "helix submodule not found at $HOME/src/helix; run sync_dotfile_submodules first"
+        return 1
     fi
 
     info "Building helix (this may take a while)..."
     cd "$HOME/src/helix/helix-term"
-    git checkout kxnr-patches
     cargo install \
        --profile opt \
        --config 'build.rustflags="-C target-cpu=native"' \
@@ -144,12 +152,9 @@ install_helix_dictionary() {
 install_shell_tools() {
     local REPO="$HOME/src/shell-tools"
 
-    if [ -d "$REPO" ]; then
-        info "shell-tools already cloned, pulling latest..."
-        git -C "$REPO" pull --ff-only
-    else
-        info "Cloning shell-tools..."
-        git clone git@github.com:kxnr/shell-tools "$REPO"
+    if [ ! -d "$REPO" ]; then
+        error "shell-tools submodule not found at $REPO; run sync_dotfile_submodules first"
+        return 1
     fi
 
     if ! command_exists just; then
@@ -222,20 +227,6 @@ setup_shell() {
         success "Changed default shell to zsh"
     else
         info "zsh already default shell"
-    fi
-
-    mkdir -p "$HOME/.zsh"
-
-    if [ ! -d "$HOME/.zsh/zsh-autosuggestions" ]; then
-        git clone https://github.com/zsh-users/zsh-autosuggestions "$HOME/.zsh/zsh-autosuggestions"
-    else
-        info "zsh-autosuggestions already installed"
-    fi
-
-    if [ ! -d "$HOME/.zsh/zsh-syntax-highlighting" ]; then
-        git clone https://github.com/zsh-users/zsh-syntax-highlighting "$HOME/.zsh/zsh-syntax-highlighting"
-    else
-        info "zsh-syntax-highlighting already installed"
     fi
 
     success "Shell setup complete"
@@ -324,14 +315,11 @@ install_nerd_font() {
     success "Nerd-fonts installed"
 }
 
-function install_docker() {
-
-}
-
 info "Starting setup..."
 
 
 install_build_essentials
+sync_dotfile_submodules
 install_docker
 install_mise
 install_rust

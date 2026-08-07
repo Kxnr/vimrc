@@ -79,6 +79,9 @@ export EDITOR=$VISUAL
 export SUDO_EDITOR=$VISUAL
 export AZ_AUTO_LOGIN_TYPE="DEVICE"
 
+export ZIDE_FILE_PICKER="broot"
+export ZIDE_DEFAULT_LAYOUT="default_lazygit"
+
 export XPAUTH_PATH="$HOME/src/smartbidder/src/projects/python/job_schedules/xpauth_dev.xpr"
 export XPRESS="$HOME/src/smartbidder/src/projects/python/job_schedules/xpauth_dev.xpr"
 

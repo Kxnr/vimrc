@@ -1,0 +1,19 @@
+[submodule "src/shell-tools"]
+	path = src/shell-tools
+	url = git@github.com:Kxnr/shell_tools.git
+[submodule ".zsh/zsh-autosuggestions"]
+	path = .zsh/zsh-autosuggestions
+	url = https://github.com/zsh-users/zsh-autosuggestions
+	branch = master
+[submodule ".zsh/zsh-syntax-highlighting"]
+	path = .zsh/zsh-syntax-highlighting
+	url = https://github.com/zsh-users/zsh-syntax-highlighting
+	branch = master
+[submodule "src/helix"]
+	path = src/helix
+	url = git@github.com:Kxnr/helix.git
+	branch = kxnr-patches
+[submodule "src/zide"]
+	path = src/zide
+	url = git@github.com:Kxnr/zide.git
+	branch = main
