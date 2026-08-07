@@ -683,3 +683,5 @@ jupyter-kernel-rm() {
     print_success "Removed kernel: $name"
   done
 }
+
+source /home/kxnr/.config/broot/launcher/bash/br
