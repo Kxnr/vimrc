@@ -702,6 +702,7 @@ debug() {
 
   {
     set -x
+
     echo "===== TIMESTAMP ====="
     date
 
@@ -763,5 +764,4 @@ debug() {
     echo "===== LAST DMESG ====="
     dmesg -T | tail -100
   } > ~/debug/wsl-debug-$(date +%Y%m%d-%H%M%S).log
-
 }

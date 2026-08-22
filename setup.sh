@@ -318,18 +318,19 @@ install_nerd_font() {
 
 info "Starting setup..."
 
-install_build_essentials
-sync_dotfile_submodules
-install_docker
-install_mise
-install_rust
-install_atuin
-install_python_tools
-setup_shell
-install_nerd_font
-install_shell_tools
-install_formatters
-install_node_tools
-install_gitember
+install_helix_dictionary
+# install_build_essentials
+# sync_dotfile_submodules
+# install_docker
+# install_mise
+# install_rust
+# install_atuin
+# install_python_tools
+# setup_shell
+# install_nerd_font
+# install_shell_tools
+# install_formatters
+# install_node_tools
+# install_gitember
 
 success "Setup complete!"
