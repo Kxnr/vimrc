@@ -1,15 +1,3 @@
-[language-server.scls]
-command = "simple-completion-language-server"
-
-[language-server.scls.config]
-max_completion_items = 100
-feature_words = false
-feature_snippets = true
-snippets_first = true
-feature_unicode_input = false
-feature_paths = false
-snippets_global_scope_path = "~/.config/helix/snippets/global.toml"
-
 [language-server.ruff]
 command = "ruff"
 args = ["server"]
@@ -29,23 +17,49 @@ command = "pytest-language-server"
 name = "python"
 auto-format = true
 roots = ["pyproject.toml"]
-language-servers = ["ty", {name = "ruff", except-features = ["document-symbols", "workspace-symbols"]}, "scls"]
+language-servers = [
+  "ty",
+  { name = "ruff", except-features = [
+    "document-symbols",
+    "workspace-symbols",
+  ] },
+]
+
+[[language]]
+name = "python"
+
+[language.debugger]
+name = "debugpy"
+transport = "stdio"
+command = "python3"
+args = ["-m", "debugpy.adapter"]
+
+[[language.debugger.templates]]
+name = "source"
+request = "launch"
+completion = [{ name = "entrypoint", completion = "filename", default = "." }]
+args = { mode = "debug", program = "{0}" }
+
+[[language.debugger.templates]]
+name = "attach"
+request = "attach"
+args = { connect = { host = "127.0.0.1", port = 5678 } }
 
 [[language]]
 name = "markdown"
 auto-format = true
-language-servers = ["marksman", "scls"]
+language-servers = ["marksman"]
 
 [language-server.chicken-lsp-server]
 command = "chicken-lsp-server"
 
 [[language]]
 name = "scheme"
-language-servers = ["chicken-lsp-server", "scls"]
+language-servers = ["chicken-lsp-server"]
 
 [[language]]
 name = "rust"
-language-servers = ["rust-analyzer", "scls"]
+language-servers = ["rust-analyzer"]
 
 [language-server.biome]
 command = "biome"
@@ -66,54 +80,78 @@ formatter = { command = "jq", args = ["."] }
 [[language]]
 name = "javascript"
 auto-format = true
-language-servers = ["biome", "scls"]
-formatter = { command = "biome", args = ["format", "--stdin-file-path", "file.js"] }
+language-servers = ["biome"]
+formatter = { command = "biome", args = [
+  "format",
+  "--stdin-file-path",
+  "file.js",
+] }
 
 [[language]]
 name = "jsx"
 auto-format = true
-language-servers = ["biome", "scls"]
-formatter = { command = "biome", args = ["format", "--stdin-file-path", "file.jsx"] }
+language-servers = ["biome"]
+formatter = { command = "biome", args = [
+  "format",
+  "--stdin-file-path",
+  "file.jsx",
+] }
 
 [[language]]
 name = "typescript"
 auto-format = true
-language-servers = ["biome", "scls"]
-formatter = { command = "biome", args = ["format", "--stdin-file-path", "file.ts"] }
+language-servers = ["biome"]
+formatter = { command = "biome", args = [
+  "format",
+  "--stdin-file-path",
+  "file.ts",
+] }
 
 [[language]]
 name = "tsx"
 auto-format = true
-language-servers = ["biome", "scls"]
-formatter = { command = "biome", args = ["format", "--stdin-file-path", "file.tsx"] }
+language-servers = ["biome"]
+formatter = { command = "biome", args = [
+  "format",
+  "--stdin-file-path",
+  "file.tsx",
+] }
 
 [[language]]
 name = "css"
 auto-format = true
 language-servers = ["biome"]
-formatter = { command = "biome", args = ["format", "--stdin-file-path", "file.css"] }
+formatter = { command = "biome", args = [
+  "format",
+  "--stdin-file-path",
+  "file.css",
+] }
 
 [[language]]
 name = "graphql"
 auto-format = true
 language-servers = ["biome"]
-formatter = { command = "biome", args = ["format", "--stdin-file-path", "file.graphql"] }
+formatter = { command = "biome", args = [
+  "format",
+  "--stdin-file-path",
+  "file.graphql",
+] }
 
 [[language]]
 name = "toml"
 auto-format = true
-language-servers = ["taplo", "scls"]
+language-servers = ["taplo"]
 
 [[language]]
 name = "yaml"
 auto-format = true
-language-servers = ["yaml-language-server", "scls"]
+language-servers = ["yaml-language-server"]
 formatter = { command = "yamlfmt", args = ["-"] }
 
 [[language]]
 name = "bash"
 auto-format = true
-language-servers = ["bash-language-server", "scls"]
+language-servers = ["bash-language-server"]
 formatter = { command = "shfmt", args = ["-"] }
 
 [[language]]
@@ -128,8 +166,39 @@ language-servers = ["terraform-ls"]
 
 [[language]]
 name = "xml"
-formatter = { command = "tidy", args = ["-q", "-xml", "--show-errors", "0", "--show-warnings", "0", "--force-output", "--indent", "auto",  "--vertical-space", "yes", "--tidy-mark", "no", "-wrap", "120"] }
+formatter = { command = "tidy", args = [
+  "-q",
+  "-xml",
+  "--show-errors",
+  "0",
+  "--show-warnings",
+  "0",
+  "--force-output",
+  "--indent",
+  "auto",
+  "--vertical-space",
+  "yes",
+  "--tidy-mark",
+  "no",
+  "-wrap",
+  "120",
+] }
 
 [[language]]
 name = "html"
-formatter = { command = "tidy", args = ["-q", "--show-errors", "0", "--show-warnings", "0", "--force-output", "--indent", "auto",  "--vertical-space", "yes", "--tidy-mark", "no", "-wrap", "120"] }
+formatter = { command = "tidy", args = [
+  "-q",
+  "--show-errors",
+  "0",
+  "--show-warnings",
+  "0",
+  "--force-output",
+  "--indent",
+  "auto",
+  "--vertical-space",
+  "yes",
+  "--tidy-mark",
+  "no",
+  "-wrap",
+  "120",
+] }

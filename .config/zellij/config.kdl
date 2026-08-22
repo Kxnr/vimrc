@@ -79,6 +79,10 @@ keybinds clear-defaults=true {
     }
     shared {
         bind "Ctrl space" { SwitchToMode "tmux"; }
+        bind "Ctrl f" {ToggleFloatingPanes;}
+        bind "Alt f" {
+            ToggleFocusFullscreen;
+        }
     }
     shared_except "locked" "search" "move" "renametab" "renamepane" {
         bind "n" { SwitchToMode "normal"; }

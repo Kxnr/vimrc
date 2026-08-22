@@ -95,7 +95,7 @@ eval "$(zoxide init zsh)"
 eval "$(atuin init zsh)"
 eval "$(starship init zsh)"
 eval "$(fzf --zsh)"
-eval "$(zellij setup --generate-auto-start zsh)"
+# eval "$(zellij setup --generate-auto-start zsh)"
 
 # =====
 # Libraries
@@ -430,7 +430,7 @@ function list-shell-defs() {
 
 function _sb_setup_env_symlinks() {
   local worktree_path="$1"
-  local envs_dir="$HOME/envs"
+  local envs_dir="$HOME/env-files"
 
   print_info "Setting up environment file symlinks..."
 
@@ -454,9 +454,9 @@ function _sb_setup_env_symlinks() {
     print_success "Linked $project_name"
   }
 
-  _sb_symlink_env "$envs_dir/.env-api" "$worktree_path/src/projects/python/api/.env" "api"
-  _sb_symlink_env "$envs_dir/.env-data_api" "$worktree_path/src/projects/python/data_api/.env" "data_api"
-  _sb_symlink_env "$envs_dir/.env-job_schedules" "$worktree_path/src/projects/python/job_schedules/.env" "job_schedules"
+  _sb_symlink_env "$envs_dir/env-api" "$worktree_path/src/projects/python/api/.env" "api"
+  _sb_symlink_env "$envs_dir/env-data-api" "$worktree_path/src/projects/python/data_api/.env" "data_api"
+  _sb_symlink_env "$envs_dir/env-job-schedules" "$worktree_path/src/projects/python/job_schedules/.env" "job_schedules"
   # _sb_symlink_env "$envs_dir/.env-ui" "$worktree_path/ui/.env" "ui"
 }
 
@@ -520,6 +520,18 @@ MISE_EOF
 mise trust
   }
 
+  # Helper: run `pants export` pinned to mise's active Python interpreter.
+  # Pants scans the entire PATH for any pythonX.Y binary satisfying
+  # [python].interpreter_constraints and prefers the oldest match it finds,
+  # regardless of where it sits on PATH -- a stray older interpreter anywhere
+  # on PATH silently wins over the one mise has pinned. Pinning search_path
+  # to mise's resolved interpreter avoids relying on PATH ordering.
+  _sb_pants_export() {
+    local mise_python_bin
+    mise_python_bin=$(dirname "$(mise which python3)") || return 1
+    PANTS_PYTHON_BOOTSTRAP_SEARCH_PATH="[\"${mise_python_bin}\"]" pants export "$@"
+  }
+
   # Helper: pick a pants-exported virtualenv directory, using gum when multiple
   # Python versions are present.
   # Usage: _sb_pick_venv <virtualenvs/resolve-name dir>
@@ -544,7 +556,7 @@ mise trust
     print_success "Generated root .mise.toml"
 
     # Export pants environment to dist/
-    pants export --resolve=global
+    _sb_pants_export --resolve=global
 
     # link exported venv to expected venv path
     local global_venv
@@ -561,7 +573,7 @@ mise trust
   (
     # Export pants api environment from the worktree root (where pants.toml lives)
     cd "${worktree_path}" || return 1
-    pants export --resolve=projects_api
+    _sb_pants_export --resolve=projects_api
 
     # link exported venv to expected venv path
     local api_venv
@@ -583,7 +595,7 @@ mise trust
   (
     # Export pants api environment from the worktree root (where pants.toml lives)
     cd "${worktree_path}" || return 1
-    pants export --resolve=projects_data_api
+    _sb_pants_export --resolve=projects_data_api
 
     # link exported venv to expected venv path
     local data_api_venv
@@ -685,3 +697,71 @@ jupyter-kernel-rm() {
 }
 
 source /home/kxnr/.config/broot/launcher/bash/br
+
+debug() {
+
+  {
+    set -x
+    echo "===== TIMESTAMP ====="
+    date
+
+    echo
+    echo "===== UPTIME ====="
+    uptime
+
+    echo
+    echo "===== MEMORY ====="
+    free -h
+    grep -E 'MemTotal|MemAvailable|SwapTotal|SwapFree' /proc/meminfo
+
+    echo
+    echo "===== LOAD ====="
+    cat /proc/loadavg
+
+    echo
+    echo "===== DISK ====="
+    df -h /
+
+    echo
+    echo "===== TOP MEMORY PROCESSES ====="
+    ps -eo pid,ppid,%cpu,%mem,rss,cmd --sort=-rss | head -30
+
+    echo
+    echo "===== TOP CPU PROCESSES ====="
+    ps -eo pid,ppid,%cpu,%mem,cmd --sort=-%cpu | head -30
+
+    echo
+    echo "===== PROCESS COUNT ====="
+    ps -e --no-headers | wc -l
+
+    echo
+    echo "===== SOCKET SUMMARY ====="
+    ss -s
+
+    echo
+    echo "===== TCP STATES ====="
+    ss -tan | awk 'NR>1 {print $1}' | sort | uniq -c | sort -nr
+
+    echo
+    echo "===== FILE DESCRIPTORS ====="
+    find /proc/[0-9]*/fd -type l 2>/dev/null | wc -l
+
+    echo
+    echo "===== INOTIFY LIMITS ====="
+    cat /proc/sys/fs/inotify/max_user_watches
+    cat /proc/sys/fs/inotify/max_user_instances
+
+    echo
+    echo "===== INOTIFY FDS ====="
+    find /proc/*/fd -lname 'anon_inode:inotify' 2>/dev/null | wc -l
+
+    echo
+    echo "===== TOTAL OPEN FILES ====="
+    find /proc/[0-9]*/fd 2>/dev/null | wc -l
+
+    echo
+    echo "===== LAST DMESG ====="
+    dmesg -T | tail -100
+  } > ~/debug/wsl-debug-$(date +%Y%m%d-%H%M%S).log
+
+}
